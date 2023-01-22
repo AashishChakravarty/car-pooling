@@ -7,6 +7,12 @@ defmodule CarPoolingWeb.Router do
 
   scope "/api", CarPoolingWeb do
     pipe_through :api
+
+    get "/status", StatusController, :index
+    put "/cars", CarController, :add_cars
+    post "/journey", JourneyController, :request_journey
+    post "/dropoff", JourneyController, :dropoff
+    post "/locate", JourneyController, :locate
   end
 
   # Enables LiveDashboard only for development

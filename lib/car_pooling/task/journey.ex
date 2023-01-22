@@ -2,8 +2,8 @@ defmodule CarPooling.Task.Journey do
   use Ecto.Schema
   import Ecto.Changeset
 
-  @required ~W(car_id people)a
-  @optional ~W(id)a
+  @required ~W(people)a
+  @optional ~W(id car_id)a
   @only @required ++ @optional
 
   @derive {Jason.Encoder, only: @only}

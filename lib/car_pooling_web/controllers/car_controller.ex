@@ -1,0 +1,22 @@
+defmodule CarPoolingWeb.CarController do
+  use CarPoolingWeb, :controller
+
+  alias CarPooling.Task
+
+  action_fallback CarPoolingWeb.FallbackController
+
+  def add_cars(conn, %{"_json" => cars}) when is_list(cars) do
+    with {:ok, %{create_cars: create_cars}} <- Task.put_cars(cars) do
+      conn
+      |> put_status(:ok)
+      |> json(%{status: true, message: "Cars Loaded Successfully", data: create_cars})
+    else
+      _ ->
+        {:error, :bad_request}
+    end
+  end
+
+  def add_cars(_conn, _params) do
+    {:error, :bad_request}
+  end
+end

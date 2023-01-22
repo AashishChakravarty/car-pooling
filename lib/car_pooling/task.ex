@@ -132,6 +132,7 @@ defmodule CarPooling.Task do
 
   """
   def get_journey!(id), do: Repo.get!(Journey, id)
+  def get_journey(id), do: Repo.get(Journey, id)
 
   @doc """
   Creates a journey.
@@ -197,4 +198,134 @@ defmodule CarPooling.Task do
   def change_journey(%Journey{} = journey, attrs \\ %{}) do
     Journey.changeset(journey, attrs)
   end
+
+  def get_car_by_minimum_seats(seats) do
+    from(car in Car,
+      where: car.seats >= ^seats,
+      order_by: car.seats,
+      limit: 1
+    )
+    |> Repo.one()
+  end
+
+  def get_not_assigned_journey_by_maximum_people(people) do
+    from(journey in Journey,
+      where: journey.people <= ^people and is_nil(journey.car_id),
+      order_by: journey.id,
+      limit: 1
+    )
+    |> Repo.one()
+  end
+
+  def put_cars(cars) do
+    Ecto.Multi.new()
+    |> Ecto.Multi.delete_all(:delete_cars, Car)
+    |> Ecto.Multi.run(:create_cars, fn _repo, _ ->
+      Enum.reduce_while(cars, {:ok, []}, fn car, {_, acc} ->
+        case create_car(car) do
+          {:ok, car_result} ->
+            {:cont, {:ok, acc ++ [car_result]}}
+
+          {:error, error} ->
+            {:halt, {:error, error}}
+        end
+      end)
+    end)
+    |> Repo.transaction()
+  end
+
+  def add_journey(people) do
+    Ecto.Multi.new()
+    |> Ecto.Multi.run(:journey, fn _, _ ->
+      create_journey(%{people: people})
+    end)
+    |> multi_get_car("add_journey", people)
+    |> multi_assigned_journey("add_journey")
+    |> Repo.transaction()
+  end
+
+  def dropoff(id) do
+    Ecto.Multi.new()
+    |> Ecto.Multi.run(:journey, fn _, _ ->
+      case get_journey(id) |> Repo.preload(:car) do
+        nil ->
+          {:error, :not_found}
+
+        %{car: nil} ->
+          {:error, :not_found}
+
+        %Journey{} = journey ->
+          {:ok, journey}
+      end
+    end)
+    |> Ecto.Multi.delete(:delete_journey, fn %{journey: journey} ->
+      journey
+    end)
+    |> multi_get_car("dropoff")
+    |> multi_assigned_journey("dropoff")
+    |> Repo.transaction()
+  end
+
+  def multi_get_car(multi, type, people \\ 0)
+
+  def multi_get_car(multi, "add_journey", people) do
+    multi
+    |> Ecto.Multi.run(:car, fn _, _ ->
+      {:ok, get_car_by_minimum_seats(people)}
+    end)
+  end
+
+  def multi_get_car(multi, "dropoff", _people) do
+    multi
+    |> Ecto.Multi.run(:car, fn _, %{journey: journey} ->
+      {:ok, journey.car}
+    end)
+  end
+
+  def multi_assigned_journey(multi, type) do
+    multi
+    |> Ecto.Multi.run(:assign_journey, fn _, %{car: car, journey: journey} ->
+      maximum_people = get_maximum_people(type, car, journey)
+
+      {:ok, get_not_assigned_journey_by_maximum_people(maximum_people)}
+    end)
+    |> Ecto.Multi.run(:update_journey, fn _, %{car: car, assign_journey: assign_journey} ->
+      case assign_journey do
+        nil ->
+          {:ok, nil}
+
+        assign_journey ->
+          update_journey(assign_journey, %{car_id: car.id})
+      end
+    end)
+    |> Ecto.Multi.run(:update_car, fn _,
+                                      %{
+                                        car: car,
+                                        journey: journey,
+                                        assign_journey: assign_journey
+                                      } ->
+      case car do
+        nil ->
+          {:ok, nil}
+
+        _ ->
+          seats = get_car_seats(type, car, assign_journey, journey)
+          update_car(car, %{seats: seats})
+      end
+    end)
+  end
+
+  def get_maximum_people("add_journey", nil, _journey), do: 0
+  def get_maximum_people("add_journey", car, _journey), do: car.seats
+  def get_maximum_people("dropoff", car, journey), do: car.seats + journey.people
+
+  defp get_car_seats("dropoff", car, nil, journey), do: car.seats + journey.people
+
+  defp get_car_seats("dropoff", car, assign_journey, journey),
+    do: car.seats + journey.people - assign_journey.people
+
+  defp get_car_seats("add_journey", nil, _assign_journey, _journey), do: 0
+
+  defp get_car_seats("add_journey", car, assign_journey, _journey),
+    do: car.seats - assign_journey.people
 end
