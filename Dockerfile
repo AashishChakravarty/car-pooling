@@ -12,7 +12,7 @@ RUN mix local.hex --force && \
 ENV MIX_ENV prod
 
 # Set and expose PORT environmental variable
-ENV PORT ${PORT:-4000}
+ENV PORT ${PORT:-9091}
 EXPOSE $PORT
 
 # Copy all application files
