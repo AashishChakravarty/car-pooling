@@ -15,6 +15,8 @@ ENV MIX_ENV prod
 ENV PORT ${PORT:-9091}
 EXPOSE $PORT
 
+EXPOSE 9091
+
 # Copy all application files
 COPY . .
 
