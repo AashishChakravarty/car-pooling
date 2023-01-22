@@ -5,7 +5,7 @@ defmodule CarPoolingWeb.Router do
     plug :accepts, ["json"]
   end
 
-  scope "/api", CarPoolingWeb do
+  scope "/", CarPoolingWeb do
     pipe_through :api
 
     get "/status", StatusController, :index
