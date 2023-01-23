@@ -17,6 +17,9 @@ ENV MIX_ENV prod
 ENV PORT 9091
 EXPOSE $PORT
 
+ENV DATABASE_URL postgres://postgres:postgres@postgres/yourapp_?
+EXPOSE DATABASE_URL
+
 # Copy all application files
 COPY . .
 
