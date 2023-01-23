@@ -1,6 +1,6 @@
 ---
 stages:
-  - build
+  # - build
   - docker
   - acceptance
 
@@ -41,9 +41,6 @@ acceptance:
   stage: acceptance
   only:
     - master
-  variables:
-    POSTGRES_URL: postgres://car_pooling:oAPEt2GcF4gh@ep-tight-silence-578941.ap-southeast-1.aws.neon.tech/car_pooling
-    PORT: "9091"
   dependencies: []
   services:
     - name: ${CI_REGISTRY_IMAGE}:latest
