@@ -4,6 +4,6 @@ defmodule CarPoolingWeb.StatusController do
   action_fallback CarPoolingWeb.FallbackController
 
   def index(conn, _params) do
-    send_resp(conn, :ok, "OK")
+    send_resp(conn, :ok, "OK") |> halt()
   end
 end
