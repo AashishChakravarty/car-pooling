@@ -10,22 +10,11 @@ defmodule CarPoolingWeb.FallbackController do
 
   def call(conn, {:error, :bad_request}) do
     conn
-    |> put_status(:bad_request)
-    |> put_view(CarPoolingWeb.ErrorView)
-    |> render(:"400")
+    |> send_resp(400, "Bad Request")
   end
 
   def call(conn, {:error, :not_found}) do
     conn
-    |> put_status(:not_found)
-    |> put_view(CarPoolingWeb.ErrorView)
-    |> render(:"404")
-  end
-
-  def call(conn, {:error, :no_content}) do
-    conn
-    |> put_status(:no_content)
-    |> put_view(CarPoolingWeb.ErrorView)
-    |> render(:"204")
+    |> send_resp(404, "Not Found")
   end
 end
