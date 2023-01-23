@@ -1,5 +1,4 @@
-# Latest version of Erlang-based Elixir installation: https://hub.docker.com/_/elixir/
-FROM hexpm/elixir:1.13.4-erlang-25.1.2-debian-bullseye-20221004-slim AS build
+FROM elixir:latest
 
 # Create and set home directory
 ENV HOME /opt/car_pooling
@@ -10,25 +9,23 @@ RUN mix local.hex --force && \
     mix local.rebar --force
 
 # Configure required environment
-
 ENV MIX_ENV prod
 
-# Set and expose PORT environmental variable
-ENV PORT 9091
+ENV PORT ${PORT:-9091}
 EXPOSE $PORT
 
-ENV DATABASE_URL postgres://car_pooling:oAPEt2GcF4gh@ep-tight-silence-578941.ap-southeast-1.aws.neon.tech/car_pooling
-EXPOSE DATABASE_URL
+EXPOSE 9091
 
 # Copy all application files
 COPY . .
 
+# Install all production dependencies
+RUN mix deps.get --only prod
+# Compile all dependencies
+RUN mix deps.compile
+
 # Compile the entire project
-RUN mix deps.get
-
-RUN mix ecto.migrate
-
-RUN phx.digest
+RUN mix compile
 
 # Run Ecto migrations and Phoenix server as an initial command
-CMD mix phx.server 2>&1 > "/opt/car_pooling/logs/server.log"
+CMD mix do ecto.migrate, phx.server
