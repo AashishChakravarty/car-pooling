@@ -12,7 +12,7 @@ RUN mix local.hex --force && \
 
 # Configure required environment
 
-ENV MIX_ENV test
+ENV MIX_ENV dev
 
 # Set and expose PORT environmental variable
 ENV PORT ${PORT:-9091}
@@ -23,11 +23,9 @@ EXPOSE $PORT
 COPY . .
 
 # Compile the entire project
-# RUN mix deps.get
-# RUN mix ecto.migrate
-RUN mix do deps.get, compile
+RUN mix deps.get
+RUN mix ecto.migrate
 RUN mix phx.digest
-RUN mix do deps.get, compile
 
 # Run Ecto migrations and Phoenix server as an initial command
-CMD mix phx.server 2>&1 > "/opt/car_pooling/logs/server.log"
+CMD mix phx.server

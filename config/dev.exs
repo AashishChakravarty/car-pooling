@@ -2,10 +2,10 @@ import Config
 
 # Configure your database
 config :car_pooling, CarPooling.Repo,
-  username: "car_pooling",
-  password: "oAPEt2GcF4gh",
-  hostname: "ep-tight-silence-578941.ap-southeast-1.aws.neon.tech",
-  database: "car_pooling",
+  username: "postgres",
+  password: "postgres",
+  hostname: "postgres",
+  database: "car_pooling_dev",
   stacktrace: true,
   show_sensitive_data_on_connection_error: true,
   pool_size: 10
