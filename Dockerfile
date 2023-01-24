@@ -12,7 +12,7 @@ RUN mix local.hex --force && \
 
 # Configure required environment
 
-ENV MIX_ENV dev
+ENV MIX_ENV test
 
 # Set and expose PORT environmental variable
 ENV PORT ${PORT:-9091}

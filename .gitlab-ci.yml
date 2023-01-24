@@ -1,3 +1,13 @@
+services:
+  - name: postgres:latest
+    alias: postgres-test
+variables:
+  POSTGRES_DB: database
+  POSTGRES_HOST: postgres
+  POSTGRES_USER: postgres
+  POSTGRES_PASSWORD: postgres
+  MIX_ENV: test
+
 ---
 stages:
   - build
