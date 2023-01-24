@@ -47,14 +47,8 @@ build_image:
     DOCKER_DRIVER: overlay2
     DOCKER_TLS_CERTDIR: ''
     DOCKER_HOST: tcp://docker:2375/
-    POSTGRES_DB: database
-    POSTGRES_HOST: postgres
-    POSTGRES_USER: postgres
-    POSTGRES_PASSWORD: postgres
-    MIX_ENV: dev
   services:
-    - name: docker:dind
-    - name: postgres:latest
+    - docker:dind
   before_script:
     - docker info
     - docker login -u ${CI_REGISTRY_USER} -p $CI_JOB_TOKEN $CI_REGISTRY
