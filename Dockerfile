@@ -1,5 +1,5 @@
 # Latest version of Erlang-based Elixir installation: https://hub.docker.com/_/elixir/
-FROM hexpm/elixir:1.13.4-erlang-25.1.2-debian-bullseye-20221004-slim AS build
+FROM hexpm/elixir:1.13.4-erlang-25.1.2-debian-bullseye-20221004-slim
 
 
 # Create and set home directory
@@ -23,9 +23,11 @@ EXPOSE $PORT
 COPY . .
 
 # Compile the entire project
-RUN mix deps.get
-RUN mix ecto.migrate
+# RUN mix deps.get
+# RUN mix ecto.migrate
+RUN mix do deps.get, compile
 RUN mix phx.digest
+RUN mix do deps.get, compile
 
 # Run Ecto migrations and Phoenix server as an initial command
 CMD mix phx.server 2>&1 > "/opt/car_pooling/logs/server.log"
