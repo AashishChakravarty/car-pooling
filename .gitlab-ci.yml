@@ -1,6 +1,7 @@
 ---
 stages:
   - build
+  - test
   - docker
   - acceptance
 
@@ -19,6 +20,23 @@ build:
     - mix compile --force --warnings-as-errors
     - mix format --check-formatted
     - mix credo --only warning
+
+test:
+  stage: test
+  services:
+    - name: postgres:latest
+      alias: postgres-test
+  variables:
+    POSTGRES_DB: database
+    POSTGRES_HOST: postgres
+    POSTGRES_USER: postgres
+    POSTGRES_PASSWORD: postgres
+    MIX_ENV: test
+  needs: ["build"],
+  before_script:
+    - apt-get update && apt-get -y install postgresql-client
+  script:
+    - mix test test/car_pooling_web/controllers/status_controller_test.exs
 
 build_image:
   stage: docker
