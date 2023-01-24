@@ -33,9 +33,11 @@ test:
     POSTGRES_USER: postgres
     POSTGRES_PASSWORD: postgres
     MIX_ENV: test
-  needs: ["build"]
   before_script:
     - apt-get update && apt-get -y install postgresql-client
+    - mix local.rebar --force
+    - mix local.hex --force
+    - mix deps.get
   script:
     - mix test test/car_pooling_web/controllers/status_controller_test.exs
 
