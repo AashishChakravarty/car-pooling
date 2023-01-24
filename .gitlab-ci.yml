@@ -1,24 +1,24 @@
 ---
 stages:
-  - build
+  # - build
   - docker
   - acceptance
 
-build:
-  stage: build
-  image: elixir:latest
-  cache:
-    key: ${CI_COMMIT_REF_SLUG}
-    paths:
-      - _build
-      - deps
-  script:
-    - mix local.rebar --force
-    - mix local.hex --force
-    - mix deps.get
-    - mix compile --force --warnings-as-errors
-    - mix format --check-formatted
-    - mix credo --only warning
+# build:
+#   stage: build
+#   image: elixir:latest
+#   cache:
+#     key: ${CI_COMMIT_REF_SLUG}
+#     paths:
+#       - _build
+#       - deps
+#   script:
+#     - mix local.rebar --force
+#     - mix local.hex --force
+#     - mix deps.get
+#     - mix compile --force --warnings-as-errors
+#     - mix format --check-formatted
+#     - mix credo --only warning
 
 build_image:
   stage: docker

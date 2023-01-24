@@ -2,10 +2,10 @@ import Config
 
 # Configure your database
 config :car_pooling, CarPooling.Repo,
-  username: "postgres",
-  password: "postgres",
-  hostname: "postgres",
-  database: "car_pooling_dev",
+  username: System.get_env("POSTGRES_USER") || "postgres",
+  password: System.get_env("POSTGRES_PASSWORD") || "postgres",
+  hostname: System.get_env("POSTGRES_HOST") || "localhost",
+  database: System.get_env("POSTGRES_DB") || "car_pooling_dev",
   stacktrace: true,
   show_sensitive_data_on_connection_error: true,
   pool_size: 10
