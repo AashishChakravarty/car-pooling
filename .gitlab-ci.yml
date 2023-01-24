@@ -23,6 +23,7 @@ build:
 
 test:
   stage: test
+  image: elixir:latest
   services:
     - name: postgres:latest
       alias: postgres-test
