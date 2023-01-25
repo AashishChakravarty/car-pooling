@@ -24,15 +24,12 @@ defmodule CarPoolingWeb.JourneyController do
       conn
       |> send_resp(200, "OK")
     else
-      {:error, :not_found} ->
-        {:error, :not_found}
-
       _ ->
-        {:error, :bad_request}
+        {:error, :not_found}
     end
   end
 
-  def dropoff(_conn, _params) do
+  def dropoff(_conn, params) do
     {:error, :bad_request}
   end
 

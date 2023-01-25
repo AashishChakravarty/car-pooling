@@ -10,12 +10,12 @@ defmodule CarPoolingWeb.FallbackController do
 
   def call(conn, {:error, :bad_request}) do
     conn
-    |> send_resp(400, "Bad Request")
+    |> send_resp(400, "")
   end
 
   def call(conn, {:error, :not_found}) do
     conn
-    |> send_resp(404, "Not Found")
+    |> send_resp(404, "")
   end
 
   def call(conn, _params) do
