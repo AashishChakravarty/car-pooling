@@ -17,4 +17,9 @@ defmodule CarPoolingWeb.FallbackController do
     conn
     |> send_resp(404, "Not Found")
   end
+
+  def call(conn, _params) do
+    conn
+    |> send_resp(405, "Method Not Allowed")
+  end
 end

@@ -8,7 +8,7 @@ defmodule CarPoolingWeb.JourneyController do
   def request_journey(conn, %{"people" => people}) do
     with {:ok, _} <- Task.add_journey(people) do
       conn
-      |> send_resp(200, "OK")
+      |> send_resp(200, "")
     else
       _ ->
         {:error, :bad_request}

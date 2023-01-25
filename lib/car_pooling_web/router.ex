@@ -13,6 +13,8 @@ defmodule CarPoolingWeb.Router do
     post "/journey", JourneyController, :request_journey
     post "/dropoff", JourneyController, :dropoff
     post "/locate", JourneyController, :locate
+
+    match(:*, "/:all", FallbackController, :call)
   end
 
   # Enables LiveDashboard only for development
