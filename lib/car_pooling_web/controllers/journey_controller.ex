@@ -36,17 +36,17 @@ defmodule CarPoolingWeb.JourneyController do
   def locate(conn, %{"ID" => id}) do
     case Task.get_journey_by_id(id) do
       %{car: nil} ->
-        conn
-        |> put_status(200)
-        |> json(nil)
+        send_resp(conn, :ok, "No Content")
 
       %{car: car} ->
         conn
         |> put_status(200)
-        |> json(car.id)
+        |> json(car)
 
       nil ->
-        {:error, :not_found}
+        conn
+        |> put_status(200)
+        |> json(nil)
 
       _ ->
         {:error, :bad_request}
