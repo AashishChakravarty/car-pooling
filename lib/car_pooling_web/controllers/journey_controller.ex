@@ -41,7 +41,7 @@ defmodule CarPoolingWeb.JourneyController do
       %{car: car} ->
         conn
         |> put_status(200)
-        |> json(car)
+        |> json(car.seats)
 
       nil ->
         {:error, :not_found}
