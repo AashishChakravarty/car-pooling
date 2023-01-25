@@ -199,8 +199,26 @@ defmodule CarPooling.Task do
     Journey.changeset(journey, attrs)
   end
 
+  def get_journeys_by_car_id(car_id) do
+    from(journey in Journey,
+      where: journey.car_id == ^car_id
+    )
+    |> Repo.all()
+  end
+
   def get_journey_by_id(journey_id) do
-    get_journey(journey_id) |> Repo.preload(:car)
+    case get_journey(journey_id) |> Repo.preload(:car) do
+      %{car: %Car{} = car} = journey ->
+        occupied_seats =
+          get_journeys_by_car_id(car.id)
+          |> Enum.reduce(0, fn %{people: people}, acc -> acc + people end)
+
+        car = Map.put(car, :seats, car.seats + occupied_seats)
+        Map.put(journey, :car, car)
+
+      result ->
+        result
+    end
   end
 
   def get_car_by_minimum_seats(seats) do

@@ -29,7 +29,7 @@ defmodule CarPoolingWeb.JourneyController do
     end
   end
 
-  def dropoff(_conn, params) do
+  def dropoff(_conn, _params) do
     {:error, :bad_request}
   end
 
@@ -44,9 +44,7 @@ defmodule CarPoolingWeb.JourneyController do
         |> json(car)
 
       nil ->
-        conn
-        |> put_status(200)
-        |> json(nil)
+        {:error, :not_found}
 
       _ ->
         {:error, :bad_request}
