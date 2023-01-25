@@ -22,16 +22,12 @@ end
 
 if config_env() == :prod do
   database_url =
-    System.get_env("DATABASE_URL") ||
-      raise """
-      environment variable DATABASE_URL is missing.
-      For example: ecto://USER:PASS@HOST/DATABASE
-      """
+    "postgres://car_pooling:CX3TVNsY7GNuvUeGJX21S2GpnQcUCspv@dpg-cf80m9hgp3jqqeqo8h4g-a.singapore-postgres.render.com/car_pooling"
 
   maybe_ipv6 = if System.get_env("ECTO_IPV6"), do: [:inet6], else: []
 
   config :car_pooling, CarPooling.Repo,
-    # ssl: true,
+    ssl: true,
     url: database_url,
     pool_size: String.to_integer(System.get_env("POOL_SIZE") || "10"),
     socket_options: maybe_ipv6
@@ -41,14 +37,14 @@ if config_env() == :prod do
   # want to use a different value for prod and you most likely don't want
   # to check this value into version control, so we use an environment
   # variable instead.
-  secret_key_base =
-    System.get_env("SECRET_KEY_BASE") ||
-      raise """
-      environment variable SECRET_KEY_BASE is missing.
-      You can generate one by calling: mix phx.gen.secret
-      """
+  secret_key_base = "LktEz+bCBPiXAU1dMduJeiV+ErHQ0ZzleO5VSlaA7RBAmf4zUMBFN7ZaKNs3ZKTY"
+  # System.get_env("SECRET_KEY_BASE") ||
+  #   raise """
+  #   environment variable SECRET_KEY_BASE is missing.
+  #   You can generate one by calling: mix phx.gen.secret
+  #   """
 
-  host = System.get_env("PHX_HOST") || "example.com"
+  host = System.get_env("PHX_HOST") || "127.0.0.1"
   port = String.to_integer(System.get_env("PORT") || "4000")
 
   config :car_pooling, CarPoolingWeb.Endpoint,
