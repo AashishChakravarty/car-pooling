@@ -199,6 +199,10 @@ defmodule CarPooling.Task do
     Journey.changeset(journey, attrs)
   end
 
+  def get_journey_by_id(journey_id) do
+    get_journey(journey_id) |> Repo.preload(:car)
+  end
+
   def get_car_by_minimum_seats(seats) do
     from(car in Car,
       where: car.seats >= ^seats,
