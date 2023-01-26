@@ -22,7 +22,7 @@ defmodule CarPoolingWeb.JourneyController do
   def dropoff(conn, %{"ID" => id}) do
     with {:ok, _} <- Task.dropoff(id) do
       conn
-      |> send_resp(200, "OK")
+      |> send_resp(200, "")
     else
       _ ->
         {:error, :not_found}
