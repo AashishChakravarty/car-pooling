@@ -66,7 +66,7 @@ defmodule CarPooling.MixProject do
         "deps.get",
         "ecto.migrate",
         "phx.digest"
-      ],
+      ]
     ]
   end
 end
