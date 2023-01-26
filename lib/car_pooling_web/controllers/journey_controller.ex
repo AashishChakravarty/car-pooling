@@ -5,8 +5,8 @@ defmodule CarPoolingWeb.JourneyController do
 
   action_fallback CarPoolingWeb.FallbackController
 
-  def request_journey(conn, %{"people" => people}) do
-    with {:ok, _} <- Task.add_journey(people) do
+  def request_journey(conn, %{"people" => _people} = params) do
+    with {:ok, _} <- Task.add_journey(params) do
       conn
       |> send_resp(200, "")
     else

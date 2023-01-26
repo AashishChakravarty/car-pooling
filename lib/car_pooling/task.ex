@@ -258,13 +258,15 @@ defmodule CarPooling.Task do
     |> Repo.transaction()
   end
 
-  def add_journey(people) do
+  def add_journey(params) do
     Ecto.Multi.new()
     |> Ecto.Multi.run(:car, fn _, _ ->
-      {:ok, get_car_by_minimum_seats(people)}
+      {:ok, get_car_by_minimum_seats(params["people"])}
     end)
     |> Ecto.Multi.run(:journey, fn _, %{car: car} ->
-      create_journey(%{car_id: car && car.id, people: people})
+      params
+      |> Map.put("car_id", car && car.id)
+      |> create_journey()
     end)
     # |> Ecto.Multi.run(:update_car, fn _,
     #                                   %{
