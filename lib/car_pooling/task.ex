@@ -246,35 +246,13 @@ defmodule CarPooling.Task do
     |> Repo.transaction()
   end
 
-  # def add_journey(params) do
-  #   Ecto.Multi.new()
-  #   |> Ecto.Multi.run(:car, fn _, _ ->
-  #     {:ok, get_car_by_minimum_seats(params["people"])}
-  #   end)
-  #   |> Ecto.Multi.run(:journey, fn _, %{car: car} ->
-  #     params
-  #     |> Map.put("car_id", car && car.id)
-  #     |> create_journey()
-  #   end)
-  #   # |> Ecto.Multi.run(:update_car, fn _,
-  #   #                                   %{
-  #   #                                     car: car,
-  #   #                                     journey: journey
-  #   #                                   } ->
-  #   #   update_car(car, %{seats: car.seats - journey.people})
-  #   # end)
-  #   # |> multi_get_car("add_journey", people)
-  #   # |> multi_assigned_journey("add_journey")
-  #   |> Repo.transaction()
-  # end
-
   def add_journey(params) do
     Ecto.Multi.new()
     |> Ecto.Multi.run(:journey, fn _, _ ->
       create_journey(params)
     end)
     |> multi_get_car("add_journey", params["people"])
-    |> multi_assigned_journey("add_journey")
+    |> multi_assigned_journey()
     |> Repo.transaction()
   end
 
@@ -295,14 +273,8 @@ defmodule CarPooling.Task do
     |> Ecto.Multi.delete(:delete_journey, fn %{journey: journey} ->
       journey
     end)
-    # |> Ecto.Multi.run(:update_car, fn _,
-    #                                   %{
-    #                                     journey: journey
-    #                                   } ->
-    #   update_car(journey.car, %{seats: journey.car.seats + journey.people})
-    # end)
     |> multi_get_car("dropoff")
-    |> multi_assigned_journey("dropoff")
+    |> multi_assigned_journey()
     |> Repo.transaction()
   end
 
@@ -322,10 +294,10 @@ defmodule CarPooling.Task do
     end)
   end
 
-  def multi_assigned_journey(multi, type) do
+  def multi_assigned_journey(multi) do
     multi
-    |> Ecto.Multi.run(:assign_journey, fn _, %{car: car, journey: journey} ->
-      maximum_people = get_maximum_people(type, car, journey)
+    |> Ecto.Multi.run(:assign_journey, fn _, %{car: car} ->
+      maximum_people = get_maximum_people(car)
 
       {:ok, get_not_assigned_journey_by_maximum_people(maximum_people)}
     end)
@@ -338,35 +310,8 @@ defmodule CarPooling.Task do
           update_journey(assign_journey, %{car_id: car.id})
       end
     end)
-
-    # |> Ecto.Multi.run(:update_car, fn _,
-    #                                   %{
-    #                                     car: car,
-    #                                     journey: journey,
-    #                                     assign_journey: assign_journey
-    #                                   } ->
-    #   case car do
-    #     nil ->
-    #       {:ok, nil}
-
-    #     _ ->
-    #       seats = get_car_seats(type, car, assign_journey, journey)
-    #       update_car(car, %{seats: seats})
-    #   end
-    # end)
   end
 
-  def get_maximum_people("add_journey", nil, _journey), do: 0
-  def get_maximum_people("add_journey", car, _journey), do: car.seats
-  def get_maximum_people("dropoff", car, journey), do: car.seats
-
-  # defp get_car_seats("dropoff", car, nil, journey), do: car.seats + journey.people
-
-  # defp get_car_seats("dropoff", car, assign_journey, journey),
-  #   do: car.seats + journey.people - assign_journey.people
-
-  # defp get_car_seats("add_journey", nil, _assign_journey, _journey), do: 0
-
-  # defp get_car_seats("add_journey", car, assign_journey, _journey),
-  #   do: car.seats - assign_journey.people
+  def get_maximum_people(nil), do: 0
+  def get_maximum_people(car), do: car.seats
 end
