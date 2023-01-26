@@ -295,8 +295,8 @@ defmodule CarPooling.Task do
         nil ->
           {:error, :not_found}
 
-        %{car: nil} ->
-          {:error, :not_found}
+        # %{car: nil} ->
+        #   {:error, :not_found}
 
         %Journey{} = journey ->
           {:ok, journey}
@@ -311,8 +311,8 @@ defmodule CarPooling.Task do
     #                                   } ->
     #   update_car(journey.car, %{seats: journey.car.seats + journey.people})
     # end)
-    |> multi_get_car("dropoff")
-    |> multi_assigned_journey("dropoff")
+    # |> multi_get_car("dropoff")
+    # |> multi_assigned_journey("dropoff")
     |> Repo.transaction()
   end
 

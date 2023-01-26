@@ -40,7 +40,7 @@ defmodule CarPoolingWeb.JourneyController do
 
       %{car: car} ->
         conn
-        # |> put_status(200)
+        |> put_status(200)
         |> json(car)
 
       nil ->
