@@ -283,8 +283,14 @@ defmodule CarPooling.Task do
     |> Ecto.Multi.delete(:delete_journey, fn %{journey: journey} ->
       journey
     end)
-    |> multi_get_car("dropoff")
-    |> multi_assigned_journey("dropoff")
+    |> Ecto.Multi.run(:update_car, fn _,
+                                      %{
+                                        journey: journey
+                                      } ->
+      update_car(journey.car, %{seats: journey.car.seats + journey.people})
+    end)
+    # |> multi_get_car("dropoff")
+    # |> multi_assigned_journey("dropoff")
     |> Repo.transaction()
   end
 
