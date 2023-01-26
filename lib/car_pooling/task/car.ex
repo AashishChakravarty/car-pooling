@@ -10,7 +10,7 @@ defmodule CarPooling.Task.Car do
   schema "cars" do
     field :seats, :integer
 
-    has_many(:journeys, CarPooling.Task.Journey)
+    has_one(:journey, CarPooling.Task.Journey)
     timestamps()
   end
 

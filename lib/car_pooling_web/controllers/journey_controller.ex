@@ -44,8 +44,7 @@ defmodule CarPoolingWeb.JourneyController do
         |> json(car)
 
       nil ->
-        # {:error, :not_found}
-        send_resp(conn, :ok, "")
+        {:error, :not_found}
 
       _ ->
         {:error, :bad_request}

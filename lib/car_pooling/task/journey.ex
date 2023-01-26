@@ -20,5 +20,6 @@ defmodule CarPooling.Task.Journey do
     journey
     |> cast(attrs, @only)
     |> validate_required(@required)
+    |> unique_constraint(:car_id)
   end
 end

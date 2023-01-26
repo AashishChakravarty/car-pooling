@@ -207,23 +207,25 @@ defmodule CarPooling.Task do
   end
 
   def get_journey_by_id(journey_id) do
-    case get_journey(journey_id) |> Repo.preload(:car) do
-      %{car: %Car{} = car} = journey ->
-        occupied_seats =
-          get_journeys_by_car_id(car.id)
-          |> Enum.reduce(0, fn %{people: people}, acc -> acc + people end)
+    get_journey(journey_id) |> Repo.preload(:car)
+    # case get_journey(journey_id) |> Repo.preload(:car) do
+    #   %{car: %Car{} = car} = journey ->
+    #     occupied_seats =
+    #       get_journeys_by_car_id(car.id)
+    #       |> Enum.reduce(0, fn %{people: people}, acc -> acc + people end)
 
-        car = Map.put(car, :seats, car.seats + occupied_seats)
-        Map.put(journey, :car, car)
+    #     car = Map.put(car, :seats, car.seats + occupied_seats)
+    #     Map.put(journey, :car, car)
 
-      result ->
-        result
-    end
+    #   result ->
+    #     result
+    # end
   end
 
   def get_car_by_minimum_seats(seats) do
     from(car in Car,
-      where: car.seats >= ^seats,
+      left_join: journey in assoc(car, :journey),
+      where: car.seats >= ^seats and is_nil(journey.car_id),
       order_by: car.seats,
       limit: 1
     )
@@ -256,23 +258,33 @@ defmodule CarPooling.Task do
     |> Repo.transaction()
   end
 
+  # def add_journey(people) do
+  #   Ecto.Multi.new()
+  #   |> Ecto.Multi.run(:car, fn _, _ ->
+  #     {:ok, get_car_by_minimum_seats(people)}
+  #   end)
+  #   |> Ecto.Multi.run(:journey, fn _, %{car: car} ->
+  #     create_journey(%{car_id: car && car.id, people: people})
+  #   end)
+  #   |> Ecto.Multi.run(:update_car, fn _,
+  #                                     %{
+  #                                       car: car,
+  #                                       journey: journey
+  #                                     } ->
+  #     update_car(car, %{seats: car.seats - journey.people})
+  #   end)
+  #   # |> multi_get_car("add_journey", people)
+  #   # |> multi_assigned_journey("add_journey")
+  #   |> Repo.transaction()
+  # end
+
   def add_journey(people) do
     Ecto.Multi.new()
-    |> Ecto.Multi.run(:car, fn _, _ ->
-      {:ok, get_car_by_minimum_seats(people)}
+    |> Ecto.Multi.run(:journey, fn _, _ ->
+      create_journey(%{people: people})
     end)
-    |> Ecto.Multi.run(:journey, fn _, %{car: car} ->
-      create_journey(%{car_id: car && car.id, people: people})
-    end)
-    |> Ecto.Multi.run(:update_car, fn _,
-                                      %{
-                                        car: car,
-                                        journey: journey
-                                      } ->
-      update_car(car, %{seats: car.seats - journey.people})
-    end)
-    # |> multi_get_car("add_journey", people)
-    # |> multi_assigned_journey("add_journey")
+    |> multi_get_car("add_journey", people)
+    |> multi_assigned_journey("add_journey")
     |> Repo.transaction()
   end
 
@@ -293,14 +305,14 @@ defmodule CarPooling.Task do
     |> Ecto.Multi.delete(:delete_journey, fn %{journey: journey} ->
       journey
     end)
-    |> Ecto.Multi.run(:update_car, fn _,
-                                      %{
-                                        journey: journey
-                                      } ->
-      update_car(journey.car, %{seats: journey.car.seats + journey.people})
-    end)
-    # |> multi_get_car("dropoff")
-    # |> multi_assigned_journey("dropoff")
+    # |> Ecto.Multi.run(:update_car, fn _,
+    #                                   %{
+    #                                     journey: journey
+    #                                   } ->
+    #   update_car(journey.car, %{seats: journey.car.seats + journey.people})
+    # end)
+    |> multi_get_car("dropoff")
+    |> multi_assigned_journey("dropoff")
     |> Repo.transaction()
   end
 
@@ -336,34 +348,35 @@ defmodule CarPooling.Task do
           update_journey(assign_journey, %{car_id: car.id})
       end
     end)
-    |> Ecto.Multi.run(:update_car, fn _,
-                                      %{
-                                        car: car,
-                                        journey: journey,
-                                        assign_journey: assign_journey
-                                      } ->
-      case car do
-        nil ->
-          {:ok, nil}
 
-        _ ->
-          seats = get_car_seats(type, car, assign_journey, journey)
-          update_car(car, %{seats: seats})
-      end
-    end)
+    # |> Ecto.Multi.run(:update_car, fn _,
+    #                                   %{
+    #                                     car: car,
+    #                                     journey: journey,
+    #                                     assign_journey: assign_journey
+    #                                   } ->
+    #   case car do
+    #     nil ->
+    #       {:ok, nil}
+
+    #     _ ->
+    #       seats = get_car_seats(type, car, assign_journey, journey)
+    #       update_car(car, %{seats: seats})
+    #   end
+    # end)
   end
 
   def get_maximum_people("add_journey", nil, _journey), do: 0
   def get_maximum_people("add_journey", car, _journey), do: car.seats
-  def get_maximum_people("dropoff", car, journey), do: car.seats + journey.people
+  def get_maximum_people("dropoff", car, journey), do: car.seats
 
-  defp get_car_seats("dropoff", car, nil, journey), do: car.seats + journey.people
+  # defp get_car_seats("dropoff", car, nil, journey), do: car.seats + journey.people
 
-  defp get_car_seats("dropoff", car, assign_journey, journey),
-    do: car.seats + journey.people - assign_journey.people
+  # defp get_car_seats("dropoff", car, assign_journey, journey),
+  #   do: car.seats + journey.people - assign_journey.people
 
-  defp get_car_seats("add_journey", nil, _assign_journey, _journey), do: 0
+  # defp get_car_seats("add_journey", nil, _assign_journey, _journey), do: 0
 
-  defp get_car_seats("add_journey", car, assign_journey, _journey),
-    do: car.seats - assign_journey.people
+  # defp get_car_seats("add_journey", car, assign_journey, _journey),
+  #   do: car.seats - assign_journey.people
 end
