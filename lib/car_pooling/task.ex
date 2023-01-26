@@ -258,35 +258,35 @@ defmodule CarPooling.Task do
     |> Repo.transaction()
   end
 
-  # def add_journey(people) do
-  #   Ecto.Multi.new()
-  #   |> Ecto.Multi.run(:car, fn _, _ ->
-  #     {:ok, get_car_by_minimum_seats(people)}
-  #   end)
-  #   |> Ecto.Multi.run(:journey, fn _, %{car: car} ->
-  #     create_journey(%{car_id: car && car.id, people: people})
-  #   end)
-  #   |> Ecto.Multi.run(:update_car, fn _,
-  #                                     %{
-  #                                       car: car,
-  #                                       journey: journey
-  #                                     } ->
-  #     update_car(car, %{seats: car.seats - journey.people})
-  #   end)
-  #   # |> multi_get_car("add_journey", people)
-  #   # |> multi_assigned_journey("add_journey")
-  #   |> Repo.transaction()
-  # end
-
   def add_journey(people) do
     Ecto.Multi.new()
-    |> Ecto.Multi.run(:journey, fn _, _ ->
-      create_journey(%{people: people})
+    |> Ecto.Multi.run(:car, fn _, _ ->
+      {:ok, get_car_by_minimum_seats(people)}
     end)
-    |> multi_get_car("add_journey", people)
-    |> multi_assigned_journey("add_journey")
+    |> Ecto.Multi.run(:journey, fn _, %{car: car} ->
+      create_journey(%{car_id: car && car.id, people: people})
+    end)
+    # |> Ecto.Multi.run(:update_car, fn _,
+    #                                   %{
+    #                                     car: car,
+    #                                     journey: journey
+    #                                   } ->
+    #   update_car(car, %{seats: car.seats - journey.people})
+    # end)
+    # |> multi_get_car("add_journey", people)
+    # |> multi_assigned_journey("add_journey")
     |> Repo.transaction()
   end
+
+  # def add_journey(people) do
+  #   Ecto.Multi.new()
+  #   |> Ecto.Multi.run(:journey, fn _, _ ->
+  #     create_journey(%{people: people})
+  #   end)
+  #   |> multi_get_car("add_journey", people)
+  #   |> multi_assigned_journey("add_journey")
+  #   |> Repo.transaction()
+  # end
 
   def dropoff(id) do
     Ecto.Multi.new()
@@ -295,8 +295,8 @@ defmodule CarPooling.Task do
         nil ->
           {:error, :not_found}
 
-        # %{car: nil} ->
-        #   {:error, :not_found}
+        %{car: nil} ->
+          {:error, :not_found}
 
         %Journey{} = journey ->
           {:ok, journey}
